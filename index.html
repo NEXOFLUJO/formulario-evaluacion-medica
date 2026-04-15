@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de Evaluación Médica</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <!-- jsPDF y html2canvas para generar PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #FDF9F6;
+      color: #2a2a2a;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #f7e8ef 0%, #fdf2f7 50%, #f0eafa 100%);
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+      border-bottom: 1px solid #f0dce8;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #993556;
+      border: 1px solid #f0b8cc;
+      border-radius: 20px;
+      padding: 5px 16px;
+      margin-bottom: 1rem;
+      background: white;
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 400;
+      font-style: italic;
+      color: #2a1a22;
+      letter-spacing: 0.01em;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero p {
+      font-size: 14px;
+      color: #7a5a6a;
+      font-weight: 300;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    .saludo {
+      background: white;
+      border-left: 3px solid #D4537E;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin-bottom: 2.5rem;
+      font-size: 14px;
+      color: #4a3040;
+      line-height: 1.7;
+      box-shadow: 0 2px 12px rgba(212,83,126,0.08);
+    }
+
+    .section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #993556;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f0dce8;
+      margin-bottom: 1.25rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .grid-1 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #7a5a6a;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: #2a1a22;
+      background: white;
+      border: 1px solid #e8d4dc;
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #D4537E;
+      box-shadow: 0 0 0 3px rgba(212,83,126,0.12);
+    }
+
+    textarea { resize: vertical; min-height: 76px; line-height: 1.5; }
+
+    select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23993556' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+    .radio-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding-top: 2px;
+    }
+
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 14px;
+      color: #2a1a22;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+
+    .radio-group input[type="radio"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #D4537E;
+      cursor: pointer;
+    }
+
+    .fotos-box {
+      border: 1.5px dashed #e8b8cc;
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-align: center;
+      background: white;
+      margin-top: 0.5rem;
+    }
+
+    .fotos-box .desc {
+      font-size: 13.5px;
+      color: #7a5a6a;
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .tag {
+      font-size: 12px;
+      background: #fdf0f5;
+      border: 1px solid #f0c8d8;
+      color: #993556;
+      border-radius: 20px;
+      padding: 4px 13px;
+    }
+
+    .file-label {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #993556;
+      border: 1px solid #D4537E;
+      border-radius: 9px;
+      padding: 9px 24px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .file-label:hover { background: #fdf0f5; }
+
+    #foto-input { display: none; }
+
+    #foto-names {
+      font-size: 12px;
+      color: #993556;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .foto-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #f0dce8;
+    }
+
+    .foto-preview img {
+      width: 100%;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #e8d4dc;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .submit-btn, .pdf-btn {
+      flex: 1;
+      min-width: 200px;
+      padding: 16px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .submit-btn {
+      background: #D4537E;
+      box-shadow: 0 4px 20px rgba(212,83,126,0.25);
+    }
+
+    .submit-btn:hover { background: #bf4570; }
+    .submit-btn:active { transform: scale(0.99); }
+
+    .pdf-btn {
+      background: #7cb342;
+      box-shadow: 0 4px 20px rgba(124,179,66,0.25);
+    }
+
+    .pdf-btn:hover { background: #689f38; }
+    .pdf-btn:active { transform: scale(0.99); }
+
+    .submit-btn svg, .pdf-btn svg { width: 20px; height: 20px; fill: white; flex-shrink: 0; }
+
+    .nota {
+      font-size: 12px;
+      color: #b08090;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #f0dce8;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 16px rgba(180,80,120,0.05);
+    }
+
+    .loading {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .loading.active { display: block; }
+
+    .spinner {
+      border: 4px solid #f0dce8;
+      border-top: 4px solid #D4537E;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 540px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .hero { padding: 2rem 1rem 1.5rem; }
+      .button-group { flex-direction: column; }
+      .submit-btn, .pdf-btn { min-width: auto; }
+    }
+
+    /* Estilos para impresión/PDF */
+    @media print {
+      body { background: white; }
+      .hero, .saludo, .button-group, .nota { display: none; }
+      .container { padding: 0; max-width: 100%; }
+      .card { page-break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-badge">Evaluación preoperatoria</div>
+    <h1>Formulario de evaluación</h1>
+    <p>Completa todos los campos con información verdadera para tu consulta</p>
+  </div>
+
+  <div class="container">
+
+    <div class="saludo">
+      ¡Hola! Princesa, completa este formulario y envía fotos de frente, de lado, de espaldas, de lado y de frente, sentada sin ropa interior para poder evaluarte. ♥️
+    </div>
+
+    <!-- Información personal -->
+    <div class="card">
+      <div class="section-title">Información personal</div>
+      <div class="grid-2">
+        <div class="field"><label>Nombre completo</label><input type="text" id="nombre" placeholder="Tu nombre completo"></div>
+        <div class="field"><label>Origen</label><input type="text" id="origen" placeholder="País / Ciudad"></div>
+        <div class="field"><label>Edad</label><input type="number" id="edad" placeholder="Años" min="0"></div>
+        <div class="field"><label>Peso (kg o lb)</label><input type="text" id="peso" placeholder="Ej: 65 kg"></div>
+        <div class="field"><label>Estatura</label><input type="text" id="estatura" placeholder="Ej: 1.65 m"></div>
+        <div class="field"><label>Hemoglobina</label><input type="text" id="hemoglobina" placeholder="Valor"></div>
+        <div class="field full">
+          <label>Sexo</label>
+          <div class="radio-group">
+            <label><input type="radio" name="sexo" value="Mujer" checked> Mujer</label>
+            <label><input type="radio" name="sexo" value="Hombre"> Hombre</label>
+            <label><input type="radio" name="sexo" value="Otro"> Otro</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Antecedentes médicos -->
+    <div class="card">
+      <div class="section-title">Antecedentes médicos</div>
+      <div class="grid-2">
+        <div class="field full"><label>¿Alguna condición médica?</label><input type="text" id="condicion" placeholder="Describir si aplica, o escribir 'Ninguna'"></div>
+        <div class="field full"><label>¿Es alérgico/a a algo?</label><input type="text" id="alergias" placeholder="Alimentos, medicamentos, etc. O escribir 'Ninguna'"></div>
+
+        <div class="field">
+          <label>Antec. personal de asma</label>
+          <div class="radio-group"><label><input type="radio" name="asma_p" value="Sí"> Sí</label><label><input type="radio" name="asma_p" value="No" checked> No</label></div>
+        </div>
+        <div class="field">
+          <label>Antec. familiar de asma</label>
+          <div class="radio-group"><label><input type="radio" name="asma_f" value="Sí"> Sí</label><label><input type="radio" name="asma_f" value="No" checked> No</label></div>
+        </div>
+        <div class="field">
+          <label>Antec. personal de diabetes</label>
+          <div class="radio-group"><label><input type="radio" name="diab_p" value="Sí"> Sí</label><label><input type="radio" name="diab_p" value="No" checked> No</label></div>
+        </div>
+        <div class="field">
+          <label>Antec. familiar de diabetes</label>
+          <div class="radio-group"><label><input type="radio" name="diab_f" value="Sí"> Sí</label><label><input type="radio" name="diab_f" value="No" checked> No</label></div>
+        </div>
+
+        <div class="field full">
+          <label>Hipertensión arterial</label>
+          <div class="radio-group">
+            <label><input type="radio" name="hta" value="Sí"> Sí</label>
+            <label><input type="radio" name="hta" value="No" checked> No</label>
+            <label><input type="radio" name="hta" value="No sé"> No sé</label>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label>Embarazos / cesáreas / partos normales (si aplica)</label>
+          <input type="text" id="embarazos" placeholder="Ej: 2 embarazos, 1 cesárea, 1 parto normal">
+        </div>
+      </div>
+    </div>
+
+    <!-- Hábitos -->
+    <div class="card">
+      <div class="section-title">Hábitos y otras condiciones</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>¿Fuma narguile, drogas u otras sustancias?</label>
+          <div class="radio-group"><label><input type="radio" name="fuma" value="Sí"> Sí</label><label><input type="radio" name="fuma" value="No" checked> No</label></div>
+        </div>
+        <div class="field">
+          <label>¿Ha dado positivo en prueba viral?</label>
+          <div class="radio-group"><label><input type="radio" name="viral" value="Sí"> Sí</label><label><input type="radio" name="viral" value="No" checked> No</label></div>
+        </div>
+        <div class="field full"><label>Enfermedad o afección actual</label><input type="text" id="enfermedad" placeholder="Describir si aplica, o 'Ninguna'"></div>
+        <div class="field full"><label>Historial quirúrgico — operaciones previas / fecha</label><textarea id="cirugia" placeholder="Ej: Apendicectomía - enero 2019. O escribir 'Ninguno'"></textarea></div>
+        <div class="field full"><label>Medicamentos actuales (incluir vitaminas)</label><textarea id="medicamentos" placeholder="Nombre y dosis de cada uno. O 'Ninguno'"></textarea></div>
+      </div>
+    </div>
+
+    <!-- Contacto y procedimiento -->
+    <div class="card">
+      <div class="section-title">Contacto y procedimiento</div>
+      <div class="grid-2">
+        <div class="field"><label>Número de teléfono</label><input type="tel" id="telefono" placeholder="+1 809 000 0000"></div>
+        <div class="field"><label>Correo electrónico</label><input type="email" id="email" placeholder="tucorreo@email.com"></div>
+        <div class="field"><label>Procedimiento deseado</label><input type="text" id="procedimiento" placeholder="Ej: Liposucción, BBL..."></div>
+        <div class="field"><label>Fecha deseada del procedimiento</label><input type="date" id="fecha"></div>
+        <div class="field full">
+          <label>¿Cómo se enteró de nosotros?</label>
+          <select id="enterado">
+            <option value="">Seleccionar...</option>
+            <option>Instagram</option>
+            <option>Facebook</option>
+            <option>TikTok</option>
+            <option>Recomendación de una amiga</option>
+            <option>Google</option>
+            <option>WhatsApp</option>
+            <option>Otro</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fotos -->
+    <div class="card">
+      <div class="section-title">Fotos de evaluación</div>
+      <div class="fotos-box">
+        <p class="desc">Adjunta tus fotos para la evaluación. Puedes generar un PDF con todas las fotos y el formulario, o enviar directamente por WhatsApp.</p>
+        <div class="tags">
+          <span class="tag">De frente</span>
+          <span class="tag">Lado derecho</span>
+          <span class="tag">Lado izquierdo</span>
+          <span class="tag">De espaldas</span>
+          <span class="tag">Sentada</span>
+        </div>
+        <label class="file-label" for="foto-input">Seleccionar fotos</label>
+        <input type="file" id="foto-input" multiple accept="image/*">
+        <div id="foto-names"></div>
+        <div id="foto-preview" class="foto-preview"></div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="pdf-btn" onclick="generarPDF()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-8-6z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="13" x2="12" y2="17"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Descargar PDF con fotos
+      </button>
+      <button class="submit-btn" onclick="enviarWhatsApp()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Enviar por WhatsApp
+      </button>
+    </div>
+    <p class="nota">Al presionar "Descargar PDF", se generará un documento con toda la información y las fotos. Al presionar "Enviar por WhatsApp", se abrirá WhatsApp con el formulario listo (envía las fotos por separado en el mismo chat).</p>
+
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Generando PDF...</p>
+  </div>
+
+  <script>
+    document.getElementById('foto-input').addEventListener('change', function() {
+      const n = this.files.length;
+      document.getElementById('foto-names').textContent = n > 0
+        ? n + ' foto(s) seleccionada(s): ' + Array.from(this.files).map(f => f.name).join(', ')
+        : '';
+      
+      // Mostrar previsualizaciones
+      const preview = document.getElementById('foto-preview');
+      preview.innerHTML = '';
+      
+      Array.from(this.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    function getRadio(name) {
+      const el = document.querySelector('input[name="' + name + '"]:checked');
+      return el ? el.value : 'No especificado';
+    }
+
+    function val(id) {
+      const el = document.getElementById(id);
+      return el && el.value.trim() ? el.value.trim() : 'No especificado';
+    }
+
+    function getFormData() {
+      const fecha = document.getElementById('fecha').value;
+      let fechaFmt = 'No especificada';
+      if (fecha) {
+        const d = new Date(fecha + 'T12:00:00');
+        fechaFmt = d.toLocaleDateString('es-DO', { day: '2-digit', month: 'long', year: 'numeric' });
+      }
+
+      return {
+        nombre: val('nombre'),
+        origen: val('origen'),
+        edad: val('edad'),
+        peso: val('peso'),
+        estatura: val('estatura'),
+        hemoglobina: val('hemoglobina'),
+        sexo: getRadio('sexo'),
+        condicion: val('condicion'),
+        alergias: val('alergias'),
+        asma_p: getRadio('asma_p'),
+        asma_f: getRadio('asma_f'),
+        diab_p: getRadio('diab_p'),
+        diab_f: getRadio('diab_f'),
+        hta: getRadio('hta'),
+        embarazos: val('embarazos'),
+        fuma: getRadio('fuma'),
+        viral: getRadio('viral'),
+        enfermedad: val('enfermedad'),
+        cirugia: val('cirugia'),
+        medicamentos: val('medicamentos'),
+        telefono: val('telefono'),
+        email: val('email'),
+        procedimiento: val('procedimiento'),
+        fecha: fechaFmt,
+        enterado: val('enterado')
+      };
+    }
+
+    function generarPDF() {
+      const fotos = document.getElementById('foto-input').files;
+      const data = getFormData();
+      
+      if (fotos.length === 0) {
+        alert('Por favor, selecciona al menos una foto para generar el PDF.');
+        return;
+      }
+
+      document.getElementById('loading').classList.add('active');
+
+      // Crear contenido HTML para el PDF
+      let htmlContent = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h1 style="text-align: center; color: #993556; border-bottom: 2px solid #D4537E; padding-bottom: 10px;">
+            FORMULARIO DE EVALUACIÓN MÉDICA
+          </h1>
+          
+          <h2 style="color: #993556; margin-top: 20px; font-size: 16px;">📋 INFORMACIÓN PERSONAL</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Nombre:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.nombre}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Origen:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.origen}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Edad:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.edad}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Peso:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.peso}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Estatura:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.estatura}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Sexo:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.sexo}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Hemoglobina:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.hemoglobina}</td></tr>
+          </table>
+
+          <h2 style="color: #993556; margin-top: 20px; font-size: 16px;">🏥 ANTECEDENTES MÉDICOS</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Condición médica:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.condicion}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Alergias:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.alergias}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Antec. personal de asma:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.asma_p}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Antec. familiar de asma:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.asma_f}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Antec. personal de diabetes:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.diab_p}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Antec. familiar de diabetes:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.diab_f}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Hipertensión arterial:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.hta}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Embarazos/cesáreas/partos:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.embarazos}</td></tr>
+          </table>
+
+          <h2 style="color: #993556; margin-top: 20px; font-size: 16px;">🚬 HÁBITOS Y OTRAS CONDICIONES</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Fuma/sustancias:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.fuma}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Prueba viral positiva:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.viral}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Enfermedad o afección:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.enfermedad}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Historial quirúrgico:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.cirugia}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Medicamentos:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.medicamentos}</td></tr>
+          </table>
+
+          <h2 style="color: #993556; margin-top: 20px; font-size: 16px;">📞 CONTACTO Y PROCEDIMIENTO</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Teléfono:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.telefono}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.email}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Procedimiento deseado:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.procedimiento}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Fecha deseada:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.fecha}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Cómo se enteró:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.enterado}</td></tr>
+          </table>
+
+          <h2 style="color: #993556; margin-top: 30px; font-size: 16px;">📸 FOTOS DE EVALUACIÓN</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;">
+      `;
+
+      // Procesar fotos
+      let fotosProcessadas = 0;
+      const fotosArray = Array.from(fotos);
+
+      fotosArray.forEach((foto, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          htmlContent += `<div style="text-align: center;"><img src="${e.target.result}" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #ddd;"/><p style="font-size: 12px; color: #666; margin-top: 5px;">${foto.name}</p></div>`;
+          fotosProcessadas++;
+
+          if (fotosProcessadas === fotosArray.length) {
+            htmlContent += `
+              </div>
+              <p style="text-align: center; color: #666; font-size: 12px; margin-top: 20px;">
+                Documento generado el ${new Date().toLocaleDateString('es-DO')} a las ${new Date().toLocaleTimeString('es-DO')}
+              </p>
+            </div>
+            `;
+
+            // Generar PDF
+            const element = document.createElement('div');
+            element.innerHTML = htmlContent;
+
+            const opt = {
+              margin: 10,
+              filename: `evaluacion_${data.nombre.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`,
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { scale: 2 },
+              jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+              document.getElementById('loading').classList.remove('active');
+              alert('PDF generado exitosamente. Se descargará automáticamente.');
+            }).catch(err => {
+              document.getElementById('loading').classList.remove('active');
+              console.error('Error al generar PDF:', err);
+              alert('Error al generar el PDF. Por favor, intenta de nuevo.');
+            });
+          }
+        };
+        reader.readAsDataURL(foto);
+      });
+    }
+
+    function enviarWhatsApp() {
+      const fotos = document.getElementById('foto-input').files.length;
+      const data = getFormData();
+
+      const lineas = [
+        '🌸 *FORMULARIO DE EVALUACIÓN MÉDICA*',
+        '',
+        '*📋 INFORMACIÓN PERSONAL*',
+        '• Nombre: ' + data.nombre,
+        '• Origen: ' + data.origen,
+        '• Edad: ' + data.edad,
+        '• Peso: ' + data.peso,
+        '• Estatura: ' + data.estatura,
+        '• Sexo: ' + data.sexo,
+        '• Hemoglobina: ' + data.hemoglobina,
+        '',
+        '*🏥 ANTECEDENTES MÉDICOS*',
+        '• Condición médica: ' + data.condicion,
+        '• Alergias: ' + data.alergias,
+        '• Antec. personal de asma: ' + data.asma_p,
+        '• Antec. familiar de asma: ' + data.asma_f,
+        '• Antec. personal de diabetes: ' + data.diab_p,
+        '• Antec. familiar de diabetes: ' + data.diab_f,
+        '• Hipertensión arterial: ' + data.hta,
+        '• Embarazos/cesáreas/partos: ' + data.embarazos,
+        '',
+        '*🚬 HÁBITOS Y OTRAS CONDICIONES*',
+        '• Fuma/sustancias: ' + data.fuma,
+        '• Prueba viral positiva: ' + data.viral,
+        '• Enfermedad o afección: ' + data.enfermedad,
+        '• Historial quirúrgico: ' + data.cirugia,
+        '• Medicamentos: ' + data.medicamentos,
+        '',
+        '*📞 CONTACTO Y PROCEDIMIENTO*',
+        '• Teléfono: ' + data.telefono,
+        '• Email: ' + data.email,
+        '• Procedimiento deseado: ' + data.procedimiento,
+        '• Fecha deseada: ' + data.fecha,
+        '• Cómo se enteró: ' + data.enterado,
+        '',
+        '📸 Fotos: ' + (fotos > 0 ? fotos + ' foto(s) — se envían a continuación' : 'La paciente las enviará por separado'),
+      ];
+
+      const msg = lineas.join('\n');
+      const numero = '18094453513';
+      window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(msg), '_blank');
+    }
+  </script>
+
+</body>
+</html>
